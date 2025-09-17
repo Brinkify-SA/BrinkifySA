@@ -1,9 +1,10 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   Linking,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,13 +17,30 @@ const CARD_WIDTH = width * 0.45;
 
 export default function LandingPage() {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
 
   const handleSignUp = () => {
+    setMenuOpen(false);
     router.push('/(auth)/signup');
   };
 
   const handleLogin = () => {
+    setMenuOpen(false);
     router.push('/(auth)/login');
+  };
+
+  const handleExplore = () => {
+    setMenuOpen(false);
+    router.push('/explore');
+  };
+
+  const handleAbout = () => {
+    setMenuOpen(false);
+    router.push('/about');
   };
 
   const openPrivacy = () => {
@@ -34,141 +52,202 @@ export default function LandingPage() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Hero Section */}
-      <View style={styles.hero}>
-        <MaterialIcons name="home-repair-service" size={72} color="#007AFF" />
-        <Text style={styles.heroTitle}>Brinkify SA</Text>
-        <Text style={styles.heroT}> South Africa’s Trusted Platform Connecting Skilled Workers & Homeowners</Text>
-        <Text style={styles.heroSubtitle}>
-         
-          Get quality work. Build your reputation. Grow your income.
-        </Text>
-        {/* Final CTA */}
-      <View style={styles.finalCta}>
-        <Text style={styles.finalCtaTitle}>Ready to Transform Your Home or Career?</Text>
-        <Text style={styles.finalCtaSubtitle}>
-          Join Brinkify SA today — where skilled work meets trusted service.
-        </Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleSignUp}>
-          <Text style={styles.primaryButtonText}>✅ Sign Up Free</Text>
+    <View style={styles.container}>
+      {/* Header with Hamburger */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={toggleMenu} style={styles.hamburgerButton}>
+          <MaterialIcons name="menu" size={28} color="#007AFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.ghostButton} onPress={handleLogin}>
-          <Text style={styles.ghostButtonText}>🔑 Already have an account? Log In</Text>
-        </TouchableOpacity>
-      </View>
+        <Text style={styles.title}>Brinkify SA</Text>
       </View>
 
-      {/* How It Works - Split View */}
-      <View style={styles.howItWorks}>
-        <View style={styles.halfSection}>
-          <View style={styles.badge}>
-            <Ionicons name="construct-outline" size={20} color="#fff" />
-            <Text style={styles.badgeText}>FOR WORKERS</Text>
+      {/* Sidebar Menu (Conditional Render) */}
+      {menuOpen && (
+        <Pressable style={styles.overlay} onPress={toggleMenu}>
+          <View style={styles.sidebar}>
+            <TouchableOpacity style={styles.closeButton} onPress={toggleMenu}>
+              <MaterialIcons name="close" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuOpen(false); }}>
+              <MaterialIcons name="home" size={20} color="#fff" />
+              <Text style={styles.menuText}>Home</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleExplore}>
+              <MaterialIcons name="explore" size={20} color="#fff" />
+              <Text style={styles.menuText}>Explore</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogin}>
+              <MaterialIcons name="lock" size={20} color="#fff" />
+              <Text style={styles.menuText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleSignUp}>
+              <MaterialIcons name="person-add" size={20} color="#fff" />
+              <Text style={styles.menuText}>Sign Up</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleAbout}>
+              <MaterialIcons name="info-outline" size={20} color="#fff" />
+              <Text style={styles.menuText}>About Us</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.halfTitle}>Find Jobs. Build Trust. Grow.</Text>
-          <Text style={styles.halfDesc}>
-            Get verified, browse local job requests, chat with customers, and earn reviews to grow your reputation.
+        </Pressable>
+      )}
+
+      {/* Scrollable Content */}
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+        {/* Hero Section */}
+        <View style={styles.hero}>
+          <MaterialIcons name="home-repair-service" size={72} color="#007AFF" />
+          <Text style={styles.heroTitle}>Brinkify SA</Text>
+          <Text style={styles.heroT}>
+            South Africa’s Trusted Platform Connecting Skilled Workers & Homeowners
           </Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/(auth)/worker-register')}>
-            <Text style={styles.secondaryButtonText}>👷 Register as Worker</Text>
-          </TouchableOpacity>
+          <Text style={styles.heroSubtitle}>
+            Get quality work. Build your reputation. Grow your income.
+          </Text>
+          {/* Final CTA */}
+          <View style={styles.finalCta}>
+            <Text style={styles.finalCtaTitle}>Ready to Transform Your Home or Career?</Text>
+            <Text style={styles.finalCtaSubtitle}>
+              Join Brinkify SA today — where skilled work meets trusted service.
+            </Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleSignUp}>
+              <Text style={styles.primaryButtonText}>✅ Sign Up Free</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.ghostButton} onPress={handleLogin}>
+              <Text style={styles.ghostButtonText}>🔑 Already have an account? Log In</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={[styles.halfSection, styles.halfSectionRight]}>
-          <View style={styles.badge}>
-            <Ionicons name="person-outline" size={20} color="#fff" />
-            <Text style={styles.badgeText}>FOR CUSTOMERS</Text>
+        {/* How It Works - Split View */}
+        <View style={styles.howItWorks}>
+          <View style={styles.halfSection}>
+            <View style={styles.badge}>
+              <Ionicons name="construct-outline" size={20} color="#fff" />
+              <Text style={styles.badgeText}>FOR WORKERS</Text>
+            </View>
+            <Text style={styles.halfTitle}>Find Jobs. Build Trust. Grow.</Text>
+            <Text style={styles.halfDesc}>
+              Get verified, browse local job requests, chat with customers, and earn reviews to grow your
+              reputation.
+            </Text>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => {
+                setMenuOpen(false);
+                router.push('/(auth)/worker-register');
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>👷 Register as Worker</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.halfTitle}>Post Jobs. Hire Pros. Done Right.</Text>
-          <Text style={styles.halfDesc}>
-            Describe your project, set your budget, get matched with verified local workers, and track progress in-app.
-          </Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.secondaryButtonText}>🏡 Post a Job</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* Key Features Grid */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Why Choose Brinkify SA?</Text>
-        <View style={styles.featureGrid}>
-          <View style={styles.featureCard}>
-            <MaterialIcons name="verified-user" size={32} color="#27ae60" />
-            <Text style={styles.featureTitle}>Verified Professionals</Text>
-            <Text style={styles.featureDesc}>
-              Every worker is ID-verified and background-checked for your safety.
+          <View style={[styles.halfSection, styles.halfSectionRight]}>
+            <View style={styles.badge}>
+              <Ionicons name="person-outline" size={20} color="#fff" />
+              <Text style={styles.badgeText}>FOR CUSTOMERS</Text>
+            </View>
+            <Text style={styles.halfTitle}>Post Jobs. Hire Pros. Done Right.</Text>
+            <Text style={styles.halfDesc}>
+              Describe your project, set your budget, get matched with verified local workers, and track
+              progress in-app.
             </Text>
-          </View>
-          <View style={styles.featureCard}>
-            <MaterialIcons name="location-on" size={32} color="#f39c12" />
-            <Text style={styles.featureTitle}>Local Matching</Text>
-            <Text style={styles.featureDesc}>
-              We connect you with skilled workers in your neighborhood.
-            </Text>
-          </View>
-          <View style={styles.featureCard}>
-            <MaterialIcons name="chat" size={32} color="#3498db" />
-            <Text style={styles.featureTitle}>Secure In-App Chat</Text>
-            <Text style={styles.featureDesc}>
-              Communicate directly, share photos, and confirm details safely.
-            </Text>
-          </View>
-          <View style={styles.featureCard}>
-            <MaterialIcons name="payments" size={32} color="#8e44ad" />
-            <Text style={styles.featureTitle}>Fair Commission Model</Text>
-            <Text style={styles.featureDesc}>
-              Transparent pricing. You only pay when you’re satisfied.
-            </Text>
+            <TouchableOpacity style={styles.secondaryButton} onPress={handleLogin}>
+              <Text style={styles.secondaryButtonText}>🏡 Post a Job</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      {/* Testimonials / Social Proof */}
-      <View style={styles.testimonialSection}>
-        <Text style={styles.sectionTitle}>Trusted by Thousands</Text>
-        <View style={styles.testimonialCard}>
-          <View style={styles.stars}>
-            {[...Array(5)].map((_, i) => (
-              <MaterialIcons key={i} name="star" size={18} color="#FF9800" />
-            ))}
+        {/* Key Features Grid */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Why Choose Brinkify SA?</Text>
+          <View style={styles.featureGrid}>
+            <View style={styles.featureCard}>
+              <MaterialIcons name="verified-user" size={32} color="#27ae60" />
+              <Text style={styles.featureTitle}>Verified Professionals</Text>
+              <Text style={styles.featureDesc}>
+                Every worker is ID-verified and background-checked for your safety.
+              </Text>
+            </View>
+            <View style={styles.featureCard}>
+              <MaterialIcons name="location-on" size={32} color="#f39c12" />
+              <Text style={styles.featureTitle}>Local Matching</Text>
+              <Text style={styles.featureDesc}>
+                We connect you with skilled workers in your neighborhood.
+              </Text>
+            </View>
+            <View style={styles.featureCard}>
+              <MaterialIcons name="chat" size={32} color="#3498db" />
+              <Text style={styles.featureTitle}>Secure In-App Chat</Text>
+              <Text style={styles.featureDesc}>
+                Communicate directly, share photos, and confirm details safely.
+              </Text>
+            </View>
+            <View style={styles.featureCard}>
+              <MaterialIcons name="payments" size={32} color="#8e44ad" />
+              <Text style={styles.featureTitle}>Fair Commission Model</Text>
+              <Text style={styles.featureDesc}>
+                Transparent pricing. You only pay when you’re satisfied.
+              </Text>
+            </View>
           </View>
-          <Text style={styles.testimonialText}>
-            “Brinkify connected me with a top-rated electrician in 2 hours. Job done perfectly!”
-          </Text>
-          <Text style={styles.testimonialAuthor}>— Sarah K., Cape Town</Text>
         </View>
-        <View style={styles.testimonialCard}>
-          <View style={styles.stars}>
-            {[...Array(5)].map((_, i) => (
-              <MaterialIcons key={i} name="star" size={18} color="#FF9800" />
-            ))}
+
+        {/* Testimonials / Social Proof */}
+        <View style={styles.testimonialSection}>
+          <Text style={styles.sectionTitle}>Trusted by Thousands</Text>
+          <View style={styles.testimonialCard}>
+            <View style={styles.stars}>
+              {[...Array(5)].map((_, i) => (
+                <MaterialIcons key={i} name="star" size={18} color="#FF9800" />
+              ))}
+            </View>
+            <Text style={styles.testimonialText}>
+              “Brinkify connected me with a top-rated electrician in 2 hours. Job done perfectly!”
+            </Text>
+            <Text style={styles.testimonialAuthor}>— Sarah K., Cape Town</Text>
           </View>
-          <Text style={styles.testimonialText}>
-            “Since joining Brinkify, my monthly income doubled. Great platform for serious workers.”
-          </Text>
-          <Text style={styles.testimonialAuthor}>— Thabo N., Johannesburg</Text>
+          <View style={styles.testimonialCard}>
+            <View style={styles.stars}>
+              {[...Array(5)].map((_, i) => (
+                <MaterialIcons key={i} name="star" size={18} color="#FF9800" />
+              ))}
+            </View>
+            <Text style={styles.testimonialText}>
+              “Since joining Brinkify, my monthly income doubled. Great platform for serious workers.”
+            </Text>
+            <Text style={styles.testimonialAuthor}>— Thabo N., Johannesburg</Text>
+          </View>
         </View>
-      </View>
-      {/* Footer */}
-      <View style={styles.footer}>
-        <View style={styles.logoRow}>
-          <MaterialIcons name="home-repair-service" size={24} color="#007AFF" />
-          <Text style={styles.logoText}>Brinkify SA</Text>
-        </View>
-        <Text style={styles.footerText}>
-          © 2025 Brinkify SA. Connecting skilled workers with homeowners across South Africa.
-        </Text>
-        <Text style={styles.footerLinks}>
-          <Text style={styles.linkText} onPress={openTerms}>Terms</Text> •{' '}
-          <Text style={styles.linkText} onPress={openPrivacy}>Privacy</Text> •{' '}
-          <Text style={styles.linkText} onPress={() => Linking.openURL('mailto:support@brinkifysa.co.za')}>
-            Contact
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.logoRow}>
+            <MaterialIcons name="home-repair-service" size={24} color="#007AFF" />
+            <Text style={styles.logoText}>Brinkify SA</Text>
+          </View>
+          <Text style={styles.footerText}>
+            © 2025 Brinkify SA. Connecting skilled workers with homeowners across South Africa.
           </Text>
-        </Text>
-      </View>
-    </ScrollView>
+          <Text style={styles.footerLinks}>
+            <Text style={styles.linkText} onPress={openTerms}>
+              Terms
+            </Text>{' '}
+            •{' '}
+            <Text style={styles.linkText} onPress={openPrivacy}>
+              Privacy
+            </Text>{' '}
+            •{' '}
+            <Text
+              style={styles.linkText}
+              onPress={() => Linking.openURL('mailto:support@brinkifysa.co.za')}
+            >
+              Contact
+            </Text>
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -176,6 +255,72 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  header: {
+    height: 60,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    zIndex: 10,
+  },
+  hamburgerButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    zIndex: 9,
+  },
+  sidebar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width * 0.75,
+    height: '100%',
+    backgroundColor: '#007AFF',
+    padding: 24,
+    paddingTop: 60,
+    zIndex: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
+  },
+  menuText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 16,
+  },
+  content: {
+    flex: 1,
   },
   hero: {
     padding: 32,
@@ -187,12 +332,13 @@ const styles = StyleSheet.create({
   heroTitle: {
     backgroundColor: '#007AFF',
     color: '#fff',
-    marginLeft: 6,
     fontSize: 36,
     fontWeight: 'bold',
     marginVertical: 12,
-    borderRadius:25,
+    borderRadius: 25,
     textAlign: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   heroT: {
     fontSize: 20,
@@ -209,23 +355,53 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     marginBottom: 24,
   },
-  ctaButton: {
-    backgroundColor: '#007AFF',
+  finalCta: {
+    padding: 32,
+    alignItems: 'center',
+    backgroundColor: '#e3f2fd',
+    borderRadius: 16,
+  },
+  finalCtaTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  finalCtaSubtitle: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 24,
+    maxWidth: 500,
+  },
+  primaryButton: {
+    backgroundColor: '#27ae60',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
-    marginTop: 16,
+    marginBottom: 16,
     width: '80%',
     alignItems: 'center',
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
   },
-  ctaButtonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: '600',
+  },
+  ghostButton: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center',
+  },
+  ghostButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
     fontWeight: '600',
   },
   howItWorks: {
@@ -369,54 +545,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#007AFF',
-  },
-  finalCta: {
-    padding: 32,
-    alignItems: 'center',
-    backgroundColor: '#e3f2fd',
-  },
-  finalCtaTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  finalCtaSubtitle: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    marginBottom: 24,
-    maxWidth: 500,
-  },
-  primaryButton: {
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    width: '80%',
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  ghostButton: {
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#007AFF',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    width: '80%',
-    alignItems: 'center',
-  },
-  ghostButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   footer: {
     padding: 24,

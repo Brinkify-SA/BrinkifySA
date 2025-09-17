@@ -1,0 +1,383 @@
+// app/notifications.tsx
+import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+    Alert,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+
+// === Mock Data ===
+const mockNotifications = [
+  {
+    id: "1",
+    type: "job",
+    title: "New Job Alert",
+    message: "A new job matching your profile is available.",
+    timestamp: "2h ago",
+    read: false,
+    icon: "assignment",
+    color: "#007AFF",
+    actionUrl: "/jobs/123",
+  },
+  {
+    id: "2",
+    type: "message",
+    title: "New Message",
+    message: "You received a message from a client.",
+    timestamp: "5h ago",
+    read: false,
+    icon: "chat",
+    color: "#27ae60",
+    actionUrl: "/messages/456",
+  },
+];
+
+type FilterType = "all" | "job" | "message";
+
+export default function NotificationsScreen() {
+  const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [filter, setFilter] = useState<FilterType>("all");
+
+  // === Refresh Logic ===
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      Alert.alert("✅ Refreshed", "Notifications updated!");
+    }, 1000);
+  }, []);
+
+  // === Actions ===
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const clearAll = () => {
+    Alert.alert(
+      "🗑️ Clear All",
+      "Are you sure you want to clear all notifications?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: () => setNotifications([]),
+        },
+      ]
+    );
+  };
+
+  const clearNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const handleNotificationPress = (url?: string) => {
+    if (!url) {
+      Alert.alert("ℹ️ Info", "No action available for this notification.");
+      return;
+    }
+    try {
+      router.push(url);
+    } catch (error) {
+      Alert.alert("⚠️ Error", "Failed to navigate to the requested page.");
+    }
+  };
+
+  // === Filter Logic ===
+  const filteredNotifications = notifications.filter((n) =>
+    filter === "all" ? true : n.type === filter
+  );
+
+  // === Render ===
+  return (
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <MaterialIcons name="notifications" size={32} color="#007AFF" />
+        <Text style={styles.title}>Notifications</Text>
+        <Text style={styles.subtitle}>
+          {notifications.filter((n) => !n.read).length} unread
+        </Text>
+      </View>
+
+      {/* Header Actions */}
+      <View style={styles.headerActions}>
+        <TouchableOpacity style={styles.actionButton} onPress={markAllAsRead}>
+          <MaterialIcons name="done-all" size={18} color="#007AFF" />
+          <Text style={styles.actionText}>Mark All Read</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={clearAll}>
+          <MaterialIcons name="delete" size={18} color="#e74c3c" />
+          <Text style={[styles.actionText, { color: "#e74c3c" }]}>
+            Clear All
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Filter Tabs */}
+      <View style={styles.filterContainer}>
+        <Text style={styles.filterLabel}>Filter:</Text>
+        <View style={styles.filterButtons}>
+          {(["all", "job", "message"] as const).map((f) => (
+            <TouchableOpacity
+              key={f}
+              style={[
+                styles.filterButton,
+                filter === f && styles.filterButtonActive,
+              ]}
+              onPress={() => setFilter(f)}
+            >
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  filter === f && styles.filterButtonTextActive,
+                ]}
+              >
+                {f.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Notifications List */}
+      <View style={styles.listContainer}>
+        {filteredNotifications.length === 0 ? (
+          <View style={styles.emptyState}>
+            <MaterialIcons name="notifications-off" size={48} color="#bdc3c7" />
+            <Text style={styles.emptyText}>No notifications</Text>
+            <Text style={styles.emptySubtext}>You're all caught up!</Text>
+          </View>
+        ) : (
+          filteredNotifications.map((item) => (
+            <View
+              key={item.id}
+              style={[styles.card, !item.read && styles.unreadCard]}
+            >
+              <TouchableOpacity
+                style={[styles.iconCircle, { backgroundColor: item.color }]}
+                onPress={() => handleNotificationPress(item.actionUrl)}
+                accessibilityLabel={`Open ${item.title}`}
+              >
+                <MaterialIcons
+                  name={item.icon as any} // Safe because we control mock data
+                  size={20}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+
+              <View style={styles.content}>
+                <TouchableOpacity
+                  onPress={() => handleNotificationPress(item.actionUrl)}
+                  style={styles.textContainer}
+                >
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.cardMessage} numberOfLines={2}>
+                    {item.message}
+                  </Text>
+                  <Text style={styles.timestamp}>{item.timestamp}</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.cardActions}>
+                {!item.read && (
+                  <TouchableOpacity
+                    style={styles.actionIcon}
+                    onPress={() => markAsRead(item.id)}
+                    accessibilityLabel="Mark as read"
+                  >
+                    <MaterialIcons name="done" size={20} color="#27ae60" />
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.actionIcon}
+                  onPress={() => clearNotification(item.id)}
+                  accessibilityLabel="Clear notification"
+                >
+                  <MaterialIcons name="close" size={20} color="#e74c3c" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* Footer Padding */}
+      <View style={{ height: 32 }} />
+    </ScrollView>
+  );
+}
+
+// === Styles ===
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+    paddingTop: 16,
+    paddingHorizontal: 16,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#2c3e50",
+    marginTop: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#7f8c8d",
+    marginTop: 4,
+  },
+
+  headerActions: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 12,
+  },
+  actionText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: "#007AFF",
+    fontWeight: "500",
+  },
+
+  filterContainer: {
+    marginBottom: 20,
+  },
+  filterLabel: {
+    fontWeight: "600",
+    fontSize: 16,
+    color: "#2c3e50",
+    marginBottom: 8,
+  },
+  filterButtons: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  filterButtonActive: {
+    backgroundColor: "#007AFF",
+    borderColor: "#007AFF",
+  },
+  filterButtonText: {
+    fontSize: 13,
+    color: "#555",
+    fontWeight: "500",
+  },
+  filterButtonTextActive: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  listContainer: {
+    paddingBottom: 16,
+  },
+  card: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  unreadCard: {
+    backgroundColor: "#eaf4ff",
+    borderLeftWidth: 4,
+    borderLeftColor: "#007AFF",
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  content: {
+    flex: 1,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontWeight: "600",
+    fontSize: 16,
+    color: "#2c3e50",
+    marginBottom: 4,
+  },
+  cardMessage: {
+    fontSize: 14,
+    color: "#555",
+    lineHeight: 20,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: "#95a5a6",
+    marginTop: 4,
+  },
+  cardActions: {
+    flexDirection: "row",
+    marginLeft: 8,
+    marginTop: 8,
+  },
+  actionIcon: {
+    marginLeft: 12,
+    padding: 4,
+  },
+
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#7f8c8d",
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#bdc3c7",
+    marginTop: 4,
+  },
+});
